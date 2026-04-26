@@ -1,6 +1,6 @@
 # 📝 Mega Blog App
 
-A production-grade full-stack blogging platform where users can sign up, write blogs with cover images, and publish them — built with React and Appwrite.
+A production-grade full-stack blogging platform where users can sign up, write blogs with cover images, and publish them - built with React and Appwrite.
 
 ---
 
@@ -11,13 +11,13 @@ A production-grade full-stack blogging platform where users can sign up, write b
 
 ## ✨ Features
 
-- 🔐 **Authentication** — Signup, Login, Logout with session management
-- 📝 **Blog CRUD** — Create, Read, Update and Delete blog posts
-- 🖼️ **Cover Image Upload** — Upload and preview images via Appwrite Storage
-- 🛡️ **Protected Routes** — Only authenticated users can create/edit posts
-- 🌐 **Public Feed** — All active posts visible to everyone
-- ⚡ **Global State** — Redux Toolkit for seamless auth state across the app
-- 🎨 **Rich Text Editor** — Write blogs with a full RTE experience
+- 🔐 **Authentication** - Signup, Login, Logout with session management
+- 📝 **Blog CRUD** - Create, Read, Update and Delete blog posts
+- 🖼️ **Cover Image Upload** - Upload and preview images via Appwrite Storage
+- 🛡️ **Protected Routes** - Only authenticated users can create/edit posts
+- 🌐 **Public Feed** - All active posts visible to everyone
+- ⚡ **Global State** - Redux Toolkit for seamless auth state across the app
+- 🎨 **Rich Text Editor** - Write blogs with a full RTE experience
 
 ---
 
@@ -43,8 +43,8 @@ MegaBlog/
 ├── public/
 ├── src/
 │   ├── appwrite/
-│   │   ├── auth.js           # AuthService — login, signup, logout
-│   │   └── config.js         # Service — DB & Storage operations
+│   │   ├── auth.js           # AuthService - login, signup, logout
+│   │   └── config.js         # Service - DB & Storage operations
 │   │
 │   ├── components/
 │   │   ├── Header/
@@ -78,7 +78,7 @@ MegaBlog/
 │   │
 │   ├── store/
 │   │   ├── Store.js          # Redux store config
-│   │   └── AuthSlice.js      # Auth reducer — login/logout state
+│   │   └── AuthSlice.js      # Auth reducer - login/logout state
 │   │
 │   ├── App.jsx
 │   └── main.jsx
@@ -143,7 +143,7 @@ React UI
           └── uploadFile | deleteFile | getFilePreview
 ```
 
-The app follows a **service layer pattern** — all Appwrite interactions are abstracted into service classes, keeping components clean and backend-agnostic.
+The app follows a **service layer pattern** - all Appwrite interactions are abstracted into service classes, keeping components clean and backend-agnostic.
 
 ---
 
@@ -179,12 +179,6 @@ Protected routes unlock → User lands on home feed
 
 ---
 
-## 🤝 Contributing
-
-Pull requests are welcome! For major changes, please open an issue first.
-
----
-
 ## 📄 License
 
 [MIT](LICENSE)
@@ -194,7 +188,6 @@ Pull requests are welcome! For major changes, please open an issue first.
 ## 👨‍💻 Author
 
 **Umesh Rathod**
-- 2nd Year IT Student @ NIT Jalandhar
-- Building in public 🚀
+- Learning and Building 🚀
 
 > *Built as a learning project to master React, Appwrite, Redux and production-grade frontend architecture.*
