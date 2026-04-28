@@ -1,26 +1,26 @@
 import React, {useState} from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { login as authLogin ,login,logout } from '../Store/AuthSlice'
+import { login as authLogin } from '../Store/AuthSlice'
 import {Input,Button, Logo} from '../Components/index'
 import { useDispatch } from 'react-redux'
 import authService from '../Appwrite/Auth'
-import {set, useForm} from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 
 function Signup() {
       const navigate = useNavigate();
       const dispatch = useDispatch();
-      const {error ,setError} = useState("");
+      const [error, setError] = useState("");
       const {register, handleSubmit} = useForm();
 
       const create = async(data) => {
           setError("")
           try {
-            const userData = await authService.createAccount(data)
+            const account = await authService.createAccount(data)
 
-            if(userData) {
-             const userData =  await authService.getCurrentUser();
-             if(userData) dispatch(login(userData));
-             navigate("/")
+            if (account) {
+                const userData = await authService.getCurrentUser()
+                if (userData) dispatch(authLogin(userData))
+                navigate("/")
             }
           } catch (error) {
               setError(error.message);
@@ -29,7 +29,7 @@ function Signup() {
     
   return (
     <div className="flex items-center justify-center">
-            <div className={`mx-auto w-full max-w-lg bg-gray-100 rounded-xl p-10 border border-black/10`}>
+            <div className="mx-auto w-full max-w-lg rounded-xl border border-slate-200 bg-white p-10 shadow-sm">
             <div className="mb-2 flex justify-center">
                     <span className="inline-block w-full max-w-25">
                         <Logo width="100%" />
@@ -40,7 +40,7 @@ function Signup() {
                     Already have an account?&nbsp;
                     <Link
                         to="/login"
-                        className="font-medium text-primary transition-all duration-200 hover:underline"
+                        className="font-medium text-indigo-600 transition-all duration-200 hover:underline"
                     >
                         Sign In
                     </Link>

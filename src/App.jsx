@@ -1,6 +1,5 @@
 import { useState,useEffect } from 'react'
 import './App.css'
-import conf from './Conf/Conf'
 import { Header, Footer } from './Components/index'
 import { useDispatch } from 'react-redux'
 import authService from './Appwrite/Auth'
@@ -23,13 +22,13 @@ function App() {
         }
       })
       .finally(() => setLoading(false))
-  },[])
+  },[dispatch])
 
   return !loading ? (
-    <div className='min-h-screen flex felx-wrap content-between bg-gray-500'>
+    <div className="min-h-screen flex flex-wrap content-between bg-slate-50 text-slate-900">
       <div className='w-full block'>
         <Header/>
-        <main>
+        <main className="py-8">
           <Outlet />
         </main>
         <Footer/>

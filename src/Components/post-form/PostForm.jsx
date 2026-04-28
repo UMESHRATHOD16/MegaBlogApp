@@ -3,7 +3,7 @@
 import React, {useCallback, useEffect} from 'react'
 import { useForm } from 'react-hook-form'
 import {Button, Input, Select, RTE} from '../index'
-import service, { Service } from '../../Appwrite/Config'
+import service from '../../Appwrite/Config'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
@@ -20,14 +20,16 @@ function PostForm({post}) {
     )
 
     const navigate = useNavigate();
-    const userData = useSelector(state => state.user.userData)
+    const userData = useSelector((state) => state.auth.userData)
 
     const submit = async(data) => {
+        const imageFile = data.image?.[0]
+
         if(post){
-            const file = data.image[0] ? service.uploadFile(data.image[0]) : null
+            const file = imageFile ? await service.uploadFile(imageFile) : null
 
             if(file){
-                service.deleteFile(post.featuredImage)
+                await service.deleteFile(post.featuredImage)
             }
 
             const dbPost = await service.updatePost( post.$id, {
@@ -41,7 +43,7 @@ function PostForm({post}) {
         }
 
         else{
-            const file = await data.image[0] ? service.uploadFile(data.image[0]) : null
+            const file = imageFile ? await service.uploadFile(imageFile) : null
 
             if(file){
                 const fileId = file.$id;
@@ -110,7 +112,7 @@ function PostForm({post}) {
                 {post && (
                     <div className="w-full mb-4">
                         <img
-                            src={appwriteService.getFilePreview(post.featuredImage)}
+                            src={service.getFilePreview(post.featuredImage)}
                             alt={post.title}
                             className="rounded-lg"
                         />

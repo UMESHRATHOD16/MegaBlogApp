@@ -17,6 +17,7 @@ export class Service {
     async createPost({ title, slug, content, featuredImage, status, userId }) {
         try {
             return await this.databases.createRow({  
+                databaseId: conf.appWriteDBId,
                 tableId: conf.appWriteCollectionId,  
                 rowId: slug,                         
                 data: {

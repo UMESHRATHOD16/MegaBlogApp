@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { login as authLogin ,logout } from '../Store/AuthSlice'
+import { login as authLogin } from '../Store/AuthSlice'
 import {Input,Button, Logo} from '../Components/index'
 import { useDispatch } from 'react-redux'
 import authService from '../Appwrite/Auth'
@@ -15,7 +15,7 @@ function Login() {
     const login = async(data) => {
         setError("")
         try {
-            const session = await authService.login(data)
+            const session = await authService.login(data.email, data.password)
             if (session) {
                 const userData = await authService.getCurrentUser()
                 if(userData) dispatch(authLogin(userData));
@@ -30,7 +30,7 @@ function Login() {
     <div
     className='flex items-center justify-center w-full'
     >
-        <div className={`mx-auto w-full max-w-lg bg-gray-100 rounded-xl p-10 border border-black/10`}>
+        <div className="mx-auto w-full max-w-lg rounded-xl border border-slate-200 bg-white p-10 shadow-sm">
         <div className="mb-2 flex justify-center">
                     <span className="inline-block w-full max-w-25">
                         <Logo width="100%" />
@@ -41,7 +41,7 @@ function Login() {
                     Don&apos;t have any account?&nbsp;
                     <Link
                         to="/signup"
-                        className="font-medium text-primary transition-all duration-200 hover:underline"
+                        className="font-medium text-indigo-600 transition-all duration-200 hover:underline"
                     >
                         Sign Up
                     </Link>
