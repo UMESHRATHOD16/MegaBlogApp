@@ -5,6 +5,7 @@ import { Header, Footer } from './Components/index'
 import { useDispatch } from 'react-redux'
 import authService from './Appwrite/Auth'
 import { login, logout } from './Store/AuthSlice'
+import { Outlet } from 'react-router-dom'
 
 function App() {
 
@@ -21,9 +22,7 @@ function App() {
           dispatch(logout())
         }
       })
-      .finally(
-        setLoading(false)
-      )
+      .finally(() => setLoading(false))
   },[])
 
   return !loading ? (
@@ -31,7 +30,7 @@ function App() {
       <div className='w-full block'>
         <Header/>
         <main>
-          {/* TODO : <Outlet/> */}
+          <Outlet />
         </main>
         <Footer/>
       </div>
