@@ -1,7 +1,7 @@
 import React from 'react'
 import {LogoutBtn,Logo, Container} from '../index.js'
 import { useSelector } from 'react-redux'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 
 
@@ -9,6 +9,7 @@ function Header() {
 
   const authStatus = useSelector((state) => state?.auth?.status ?? false)
   const navigate = useNavigate()
+  const { pathname } = useLocation()
 
   const navItems = [
     {
@@ -39,35 +40,38 @@ function Header() {
   ]
 
   return (
-    <header  className='py-3 shadow bg-gray-500' > 
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur">
         <Container>
-          <nav className='flex'>
-            <div className='mr-4'>
-                <Link to= '/'>
-                  <Logo width='70px'/>
-                </Link>
-            </div>
-          </nav>
+          <nav className="flex items-center py-3">
+            <Link to="/" className="flex items-center gap-2">
+              <Logo width="auto" />
+            </Link>
 
-          <ul className='flex ml-auto'>
-              {navItems.map((item)=>(
-                item.active ? (
-                  <li key={item.name}>
-                    <button onClick={()=> navigate(item.slug) } 
-                      className='inline-block px-6 py-2 duration-200 hover:bg-blue-100 rounded-full'
-                    >
-                      {item.name}
-                    </button>
+            <ul className="ml-auto flex items-center gap-1">
+                {navItems.map((item) =>
+                  item.active ? (
+                    <li key={item.name}>
+                      <button
+                        onClick={() => navigate(item.slug)}
+                        className={`inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition ${
+                          pathname === item.slug
+                            ? "bg-slate-900 text-white"
+                            : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                        }`}
+                      >
+                        {item.name}
+                      </button>
+                    </li>
+                  ) : null
+                )}
+
+                {authStatus && (
+                  <li>
+                    <LogoutBtn />
                   </li>
-                ) : null
-              ))}
-
-              { authStatus && (
-                <li>
-                  <LogoutBtn/>
-                </li>
-              )}
-          </ul>
+                )}
+            </ul>
+          </nav>
         </Container>
     </header>
   )
