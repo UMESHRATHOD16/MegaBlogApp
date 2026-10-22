@@ -7,7 +7,8 @@ import { store } from './Store/Store.js'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Home from './Pages/Home.jsx'
 import { AuthLayout, Login,Signup, AllPosts, AddPost, EditPost, Post } from './Components/index.js'
-
+import ForgotPassword from './Pages/ForgotPassword.jsx'
+import ResetPassword from './Pages/ResetPassword.jsx'
 
 const router = createBrowserRouter([
   {
@@ -65,6 +66,14 @@ const router = createBrowserRouter([
         {
             path: "/post/:slug",
             element: <Post />,
+        },
+        {
+            path: "/forgot-password",
+            element: <ForgotPassword />
+        },
+        {
+            path: "/reset-password",
+            element: <ResetPassword />
         },
 
   ],

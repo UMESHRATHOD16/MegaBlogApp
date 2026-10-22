@@ -5,6 +5,8 @@ import { useDispatch } from 'react-redux'
 import authService from './Appwrite/Auth'
 import { login, logout } from './Store/AuthSlice'
 import { Outlet } from 'react-router-dom'
+import ForgotPassword from './Pages/ForgotPassword'
+import ResetPassword from './Pages/ResetPassword'
 
 function App() {
 

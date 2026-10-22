@@ -74,9 +74,19 @@ function Login() {
                 className="w-full"
                 >Sign in</Button>
             </div>
+        <div className="text-right">
+            <Link
+                to="/forgot-password"
+                className="text-sm font-medium text-indigo-600 hover:underline"
+            >
+                Forgot password?
+            </Link>
+        </div>
         </form>
         </div>
+        
     </div>
+    
   )
 }
 

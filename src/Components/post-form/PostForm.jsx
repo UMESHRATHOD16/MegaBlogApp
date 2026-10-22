@@ -1,116 +1,187 @@
-// The form which user uploads the blog-post...[post-form]
+import React, { useCallback, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Button, Input, Select, RTE } from '../index';
+import service from '../../Appwrite/Config';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
-import React, {useCallback, useEffect} from 'react'
-import { useForm } from 'react-hook-form'
-import {Button, Input, Select, RTE} from '../index'
-import service from '../../Appwrite/Config'
-import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
-
-function PostForm({post}) {
-    const {register, handleSubmit, watch, setValue, control, getValues} = useForm(
-        {
-            defaultValues : {
-            title : post?.title || '',
-            slug : post?.slug || '',
-            content : post?.content || '',
-            status : post?.status || 'active',
+function PostForm({ post }) {
+    const {
+        register,
+        handleSubmit,
+        watch,
+        setValue,
+        control,
+        getValues,
+        formState: { errors }
+    } = useForm({
+        defaultValues: {
+            title: post?.title || '',
+            slug: post?.slug || '',
+            content: post?.content || '',
+            status: post?.status || 'active',
         }
-    }
-    )
+    });
 
     const navigate = useNavigate();
-    const userData = useSelector((state) => state.auth.userData)
+    const userData = useSelector((state) => state.auth.userData);
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const submit = async(data) => {
-        const imageFile = data.image?.[0]
+    const submit = async (data) => {
+        setError('');
+        setLoading(true);
 
-        if(post){
-            const file = imageFile ? await service.uploadFile(imageFile) : null
+        let uploadedFileId = null;
 
-            if(file){
-                await service.deleteFile(post.featuredImage)
+        try {
+            const imageFile = data.image?.[0];
+
+            if (!post && !imageFile) {
+                throw new Error('Please select a featured image.');
             }
 
-            const dbPost = await service.updatePost( post.$id, {
-                ...data,
-                featuredImage: file ? file.$id : undefined
-            } )
+            let file = null;
 
-            if(dbPost){
-                navigate(`/post/${dbPost.$id}`)
-            }
-        }
+            if (imageFile) {
+                file = await service.uploadFile(imageFile);
+                uploadedFileId = file?.$id;
 
-        else{
-            const file = imageFile ? await service.uploadFile(imageFile) : null
-
-            if(file){
-                const fileId = file.$id;
-                data.featuredImage = fileId
-                const dbPost = await service.createPost({
-                    ...data,
-                    userId : userData.$id,
-
-                })
-                if(dbPost){
-                    navigate(`/post/${dbPost.$id}`)
+                if (!uploadedFileId) {
+                    throw new Error('Image upload failed.');
                 }
             }
+
+            const postData = {
+                title: data.title,
+                slug: data.slug,
+                content: data.content,
+                status: data.status,
+                ...(file ? { featuredImage: file.$id } : {}),
+            };
+
+            let dbPost;
+
+            if (post) {
+                dbPost = await service.updatePost(post.$id, postData);
+            } else {
+                if (!userData?.$id) {
+                    throw new Error('You are not logged in. Please log in again.');
+                }
+
+                dbPost = await service.createPost({
+                    ...postData,
+                    featuredImage: file.$id,
+                    userId: userData.$id,
+                });
+            }
+
+            if (!dbPost) {
+                throw new Error('Post could not be saved.');
+            }
+
+            if (post && file && post.featuredImage) {
+                try {
+                    await service.deleteFile(post.featuredImage);
+                } catch (deleteError) {
+                    console.error('Old image could not be deleted:', deleteError);
+                }
+            }
+
+            navigate(`/post/${dbPost.slug || dbPost.$id}`);
+        } catch (err) {
+            console.error('Post submission failed:', err);
+
+            if (uploadedFileId) {
+                try {
+                    await service.deleteFile(uploadedFileId);
+                } catch (cleanupError) {
+                    console.error('Uploaded image cleanup failed:', cleanupError);
+                }
+            }
+
+            setError(err.message || 'Something went wrong while saving your post.');
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
     const slugTransform = useCallback((value) => {
-        if (value && typeof value === "string")
-            return value
-                .trim()
+        if (value && typeof value === 'string') {
+            return value.trim()
                 .toLowerCase()
-                .replace(/[^a-zA-Z\d\s]+/g, "-")
-                .replace(/\s/g, "-");
+                .replace(/[^a-zA-Z\d\s]+/g, '-')
+                .replace(/\s+/g, '-');
+        }
 
-        return "";
+        return '';
     }, []);
 
     useEffect(() => {
         const subscription = watch((value, { name }) => {
-            if (name === "title") {
-                setValue("slug", slugTransform(value.title), { shouldValidate: true });
+            if (name === 'title') {
+                setValue('slug', slugTransform(value.title), {
+                    shouldValidate: true
+                });
             }
         });
 
         return () => subscription.unsubscribe();
     }, [watch, slugTransform, setValue]);
 
-  return (
-    <form onSubmit={handleSubmit(submit)} className="flex flex-wrap">
+    return (
+        <form onSubmit={handleSubmit(submit)} className="flex flex-wrap">
             <div className="w-2/3 px-2">
                 <Input
-                    label="Title :"
+                    label="Title:"
                     placeholder="Title"
                     className="mb-4"
-                    {...register("title", { required: true })}
+                    {...register('title', { required: 'Title is required.' })}
                 />
+                {errors.title && (
+                    <p className="mb-3 text-sm text-red-600">
+                        {errors.title.message}
+                    </p>
+                )}
+
                 <Input
-                    label="Slug :"
+                    label="Slug:"
                     placeholder="Slug"
                     className="mb-4"
-                    {...register("slug", { required: true })}
-                    onInput={(e) => {
-                        setValue("slug", slugTransform(e.currentTarget.value), { shouldValidate: true });
-                    }}
+                    {...register('slug', { required: 'Slug is required.' })}
                 />
-                <RTE label="Content :" name="content" control={control} defaultValue={getValues("content")} />
+                {errors.slug && (
+                    <p className="mb-3 text-sm text-red-600">
+                        {errors.slug.message}
+                    </p>
+                )}
+
+                <RTE
+                    label="Content:"
+                    name="content"
+                    control={control}
+                    defaultValue={getValues('content')}
+                />
             </div>
+
             <div className="w-1/3 px-2">
                 <Input
-                    label="Featured Image :"
+                    label="Featured Image:"
                     type="file"
                     className="mb-4"
                     accept="image/png, image/jpg, image/jpeg, image/gif"
-                    {...register("image", { required: !post })}
+                    {...register('image', {
+                        required: !post ? 'Please select a featured image.' : false
+                    })}
                 />
+                {errors.image && (
+                    <p className="mb-3 text-sm text-red-600">
+                        {errors.image.message}
+                    </p>
+                )}
+
                 {post && (
-                    <div className="w-full mb-4">
+                    <div className="mb-4 w-full">
                         <img
                             src={service.getFilePreview(post.featuredImage)}
                             alt={post.title}
@@ -118,18 +189,31 @@ function PostForm({post}) {
                         />
                     </div>
                 )}
+
                 <Select
-                    options={["active", "inactive"]}
+                    options={['active', 'inactive']}
                     label="Status"
                     className="mb-4"
-                    {...register("status", { required: true })}
+                    {...register('status', { required: true })}
                 />
-                <Button type="submit" bgColor={post ? "bg-green-500" : undefined} className="w-full">
-                    {post ? "Update" : "Submit"}
+
+                {error && (
+                    <p className="mb-4 break-words text-sm text-red-600">
+                        {error}
+                    </p>
+                )}
+
+                <Button
+                    type="submit"
+                    bgColor={post ? 'bg-green-500' : undefined}
+                    className="w-full"
+                    disabled={loading}
+                >
+                    {loading ? 'Saving...' : post ? 'Update' : 'Submit'}
                 </Button>
             </div>
         </form>
-  )
+    );
 }
 
-export default PostForm
+export default PostForm;

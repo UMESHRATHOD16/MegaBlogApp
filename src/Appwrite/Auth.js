@@ -44,6 +44,22 @@ export class AuthService  {
             return null
         }
     }
+    
+    async forgotPassword(email) {
+    return await this.account.createRecovery({
+        email,
+        url: `${window.location.origin}/reset-password`
+        });
+    }
+
+    async resetPassword({ userId, secret, password }) {
+        return await this.account.updateRecovery({
+            userId,
+            secret,
+            password,
+            passwordAgain: password
+        });
+    }
 }
 
 const authService = new AuthService();
