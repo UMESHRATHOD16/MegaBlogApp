@@ -25,7 +25,7 @@ function PostCard({ $id, Title, FeaturedImage, Content, $createdAt }) {
             >
                 {FeaturedImage ? (
                     <img
-                        src={service.getFilePreview(FeaturedImage)}
+                        src={service.getFileView(FeaturedImage)}
                         alt={Title || 'Article cover'}
                         loading="lazy"
                         className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"

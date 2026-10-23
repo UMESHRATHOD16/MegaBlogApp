@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import service from '../Appwrite/Config';
@@ -8,6 +7,7 @@ function Home() {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const [search, setSearch] = useState('');
 
     useEffect(() => {
         let cancelled = false;
@@ -38,8 +38,25 @@ function Home() {
         };
     }, []);
 
-    const featuredPost = posts[0];
-    const remainingPosts = posts.slice(1);
+    const filteredPosts = posts.filter((post) => {
+        const title = post.Title || '';
+        const content = (post.Content || '').replace(/<[^>]*>/g, ' ');
+
+        const searchableText = `${title} ${content}`.toLowerCase();
+        return searchableText.includes(search.trim().toLowerCase());
+    });
+
+    const featuredPost = search.trim() ? null : posts[0];
+
+    const remainingPosts = search.trim()
+        ? filteredPosts
+        : posts.slice(1);
+
+    const getExcerpt = (content) =>
+        (content || '')
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
 
     return (
         <main className="min-h-screen bg-[#faf9f6] text-stone-900">
@@ -63,18 +80,61 @@ function Home() {
                             from people who have something to share.
                         </p>
                     </div>
+
+                    <div className="mt-8 max-w-xl">
+                        <label
+                            htmlFor="story-search"
+                            className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-stone-500"
+                        >
+                            Find your next read
+                        </label>
+
+                        <div className="flex items-center gap-3 border-b border-stone-300 py-3 transition-colors focus-within:border-amber-800">
+                            <svg
+                                aria-hidden="true"
+                                className="h-5 w-5 shrink-0 text-stone-500"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.7"
+                            >
+                                <circle cx="11" cy="11" r="7" />
+                                <path d="m16 16 4 4" />
+                            </svg>
+
+                            <input
+                                id="story-search"
+                                type="search"
+                                value={search}
+                                onChange={(event) => setSearch(event.target.value)}
+                                placeholder="Search stories, ideas, topics..."
+                                className="w-full bg-transparent text-sm text-stone-900 outline-none placeholder:text-stone-400"
+                            />
+
+                            {search && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSearch('')}
+                                    className="shrink-0 text-xs font-semibold uppercase tracking-wider text-stone-500 hover:text-amber-800"
+                                >
+                                    Clear
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </section>
 
                 <section className="py-10 sm:py-14">
-                    <div className="mb-7 flex items-center justify-between border-b border-stone-200 pb-4">
+                    <div className="mb-7 flex items-center justify-between gap-4 border-b border-stone-200 pb-4">
                         <h2 className="font-serif text-2xl sm:text-3xl">
-                            The latest
+                            {search.trim() ? 'Search results' : 'The latest'}
                         </h2>
 
-                        {!loading && posts.length > 0 && (
+                        {!loading && (
                             <span className="text-xs uppercase tracking-[0.15em] text-stone-500">
-                                {posts.length}{' '}
-                                {posts.length === 1 ? 'story' : 'stories'}
+                                {search.trim()
+                                    ? `${filteredPosts.length} found`
+                                    : `${posts.length} ${posts.length === 1 ? 'story' : 'stories'}`}
                             </span>
                         )}
                     </div>
@@ -124,6 +184,21 @@ function Home() {
                                 Write a story
                             </Link>
                         </div>
+                    ) : search.trim() && filteredPosts.length === 0 ? (
+                        <div className="py-16 text-center">
+                            <h3 className="font-serif text-2xl">
+                                No stories found.
+                            </h3>
+                            <p className="mt-3 text-sm text-stone-600">
+                                Try another keyword or clear your search.
+                            </p>
+                            <button
+                                onClick={() => setSearch('')}
+                                className="mt-5 border border-stone-300 px-5 py-3 text-xs font-semibold uppercase tracking-widest hover:bg-stone-100"
+                            >
+                                Show all stories
+                            </button>
+                        </div>
                     ) : (
                         <>
                             {featuredPost && (
@@ -134,13 +209,8 @@ function Home() {
                                     >
                                         {featuredPost.FeaturedImage ? (
                                             <img
-                                                src={service.getFilePreview(
-                                                    featuredPost.FeaturedImage
-                                                )}
-                                                alt={
-                                                    featuredPost.Title ||
-                                                    'Featured story'
-                                                }
+                                                src={service.getFileView(featuredPost.FeaturedImage)}
+                                                alt={featuredPost.Title || 'Featured story'}
                                                 className="aspect-[5/3] w-full object-cover transition-transform duration-700 group-hover:scale-[1.02] lg:aspect-[4/3]"
                                             />
                                         ) : (
@@ -157,9 +227,7 @@ function Home() {
 
                                         {featuredPost.$createdAt && (
                                             <p className="mt-4 text-xs uppercase tracking-wider text-stone-500">
-                                                {new Date(
-                                                    featuredPost.$createdAt
-                                                ).toLocaleDateString('en-US', {
+                                                {new Date(featuredPost.$createdAt).toLocaleDateString('en-US', {
                                                     month: 'long',
                                                     day: 'numeric',
                                                     year: 'numeric',
@@ -167,23 +235,15 @@ function Home() {
                                             </p>
                                         )}
 
-                                        <Link
-                                            to={`/post/${featuredPost.$id}`}
-                                        >
+                                        <Link to={`/post/${featuredPost.$id}`}>
                                             <h3 className="mt-3 font-serif text-3xl leading-tight tracking-tight transition-colors hover:text-amber-800 sm:text-4xl">
-                                                {featuredPost.Title ||
-                                                    'Untitled story'}
+                                                {featuredPost.Title || 'Untitled story'}
                                             </h3>
                                         </Link>
 
                                         {featuredPost.Content && (
                                             <p className="mt-4 line-clamp-4 text-sm leading-7 text-stone-600">
-                                                {featuredPost.Content.replace(
-                                                    /<[^>]*>/g,
-                                                    ' '
-                                                )
-                                                    .replace(/\s+/g, ' ')
-                                                    .trim()}
+                                                {getExcerpt(featuredPost.Content)}
                                             </p>
                                         )}
 
@@ -198,25 +258,25 @@ function Home() {
                             )}
 
                             {remainingPosts.length > 0 && (
-                                <section className="pt-10 sm:pt-12">
+                                <section className={featuredPost ? 'pt-10 sm:pt-12' : ''}>
                                     <div className="mb-7 flex items-center justify-between">
                                         <h2 className="font-serif text-2xl sm:text-3xl">
-                                            More to explore
+                                            {search.trim() ? 'Matching stories' : 'More to explore'}
                                         </h2>
-                                        <Link
-                                            to="/all-posts"
-                                            className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-600 transition hover:text-amber-800"
-                                        >
-                                            All stories →
-                                        </Link>
+
+                                        {!search.trim() && (
+                                            <Link
+                                                to="/all-posts"
+                                                className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-600 transition hover:text-amber-800"
+                                            >
+                                                All stories →
+                                            </Link>
+                                        )}
                                     </div>
 
                                     <div className="grid grid-cols-1 gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                                         {remainingPosts.map((post) => (
-                                            <PostCard
-                                                key={post.$id}
-                                                {...post}
-                                            />
+                                            <PostCard key={post.$id} {...post} />
                                         ))}
                                     </div>
                                 </section>
@@ -225,25 +285,27 @@ function Home() {
                     )}
                 </section>
 
-                <section className="mb-12 border-y border-stone-200 py-8 sm:mb-16 sm:py-10">
-                    <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-                        <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-800">
-                                Have a story?
-                            </p>
-                            <h2 className="mt-2 font-serif text-2xl sm:text-3xl">
-                                Put your ideas into words.
-                            </h2>
-                        </div>
+                {!search.trim() && (
+                    <section className="mb-12 border-y border-stone-200 py-8 sm:mb-16 sm:py-10">
+                        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-800">
+                                    Have a story?
+                                </p>
+                                <h2 className="mt-2 font-serif text-2xl sm:text-3xl">
+                                    Put your ideas into words.
+                                </h2>
+                            </div>
 
-                        <Link
-                            to="/add-post"
-                            className="inline-flex w-fit items-center gap-3 bg-stone-900 px-5 py-3 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-amber-900"
-                        >
-                            Write a story <span>→</span>
-                        </Link>
-                    </div>
-                </section>
+                            <Link
+                                to="/add-post"
+                                className="inline-flex w-fit items-center gap-3 bg-stone-900 px-5 py-3 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-amber-900"
+                            >
+                                Write a story <span>→</span>
+                            </Link>
+                        </div>
+                    </section>
+                )}
             </Container>
         </main>
     );

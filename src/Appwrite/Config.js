@@ -154,7 +154,8 @@ export class Service {
         }
     }
 
-        getFilePreview(fileId) {
+
+        getFileView(fileId) {
             if (!fileId) return null;
 
             return this.bucket.getFileView({
